@@ -4,7 +4,7 @@ Loading multiple datasets from scikit-learn, visualizing them and performing bas
 
 | Name | Date |
 |:-------|:---------------|
-| Anastasia | March 23, 2019 |
+| Anastasia Haswani | March 23, 2019 |
 
 -----
 
