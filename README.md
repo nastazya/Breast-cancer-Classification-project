@@ -20,7 +20,7 @@ Your repository should include the following:
 
 ## Research Question
 
-1 sentence description of your research question.
+Using breast cancer Wisconsin dataset explore and evaluate three machine learnin algorithms (GaussianNB, nearest neighbour and SVC) in  order  to  choose  the  one  which  will fit best for breast cancer diagnose.
 
 ### Abstract
 
