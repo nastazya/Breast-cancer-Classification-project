@@ -1,19 +1,16 @@
 #!/usr/bin/env python
 
-import os
 import numpy as np
 import pandas as pd
 import argparse
 import csv
 import matplotlib.pyplot as plt
-import string
-import math
+import string, math, os, random
 from mpl_toolkits.mplot3d import Axes3D
 from plotly import tools
 import plotly as py
 import plotly.graph_objs as go
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
-import random
 import sklearn
 from sklearn import datasets, model_selection, metrics, neighbors
 from sklearn.neighbors import KNeighborsClassifier
@@ -161,8 +158,7 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 		cor = df.corr()
 		fig = plt.figure(figsize=(11, 11))
 		plt.imshow(cor, interpolation='nearest')
-		#help(plt.imshow)
-
+		
 		im_ticks = range(number)
 		plt.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
 		mask = np.zeros_like(cor)
@@ -282,55 +278,50 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 
 	def plot_3d_clustering (f1, f2, f3):
 		'''Plotting 3D cluster scatter'''	
-		folder = "3D_{0}".format(dataset_name)
-		if not os.path.exists(folder):
-			os.makedirs(folder)
-				
-		mal = df.loc[df['target']=='malignant']
-		ben = df.loc[df['target']=='benign']
+		if c_flag == True:
+			folder = "3D_{0}".format(dataset_name)
+			if not os.path.exists(folder):
+				os.makedirs(folder)
 
-		xm = mal.loc[:,f1]
-		ym = mal.loc[:,f2]
-		zm = mal.loc[:,f3]
+			clustered_data = []
 
-
-		xb = ben.loc[:,f1]
-		yb = ben.loc[:,f2]
-		zb = ben.loc[:,f3]
-
-		scatter = dict(
-			mode = "markers",
-			name = "y",
-			type = "scatter3d",    
-			x = df[f1], y = df[f2], z = df[f3],
-			marker = dict( size=2, color="rgb(23, 190, 207)" )
-		)
-		clustersm = dict(
-			alphahull = 7,
-			name = "Malignant",
-			opacity = 0.1,
-			type = "mesh3d",    
-			x = xm, y = ym, z = zm,
-			color = 'rgb(0, 128, 128)'
-		)
-		clustersb = dict(
-			alphahull = 7,
-			name = "Benign",
-			opacity = 0.1,
-			type = "mesh3d",    
-			x = xb, y = yb, z = zb,
-			color = 'rgb(0, 0, 128)'
-		)
-		layout = dict(
-			title = '3d point clustering',
-			scene = dict(
-				xaxis = dict( zeroline=False, title=f1 ),
-				yaxis = dict( zeroline=False, title=f2 ),
-				zaxis = dict( zeroline=False, title=f3 ),
+		
+			for i in range(len(gr["data"])):
+				data_gr = gr["data"][i]
+				label_gr = gr["labels"][i]
+				c = "rgb(" + str(50*i+128) + ", " + str(128+i) + ", " + str(128+i*50) + ")"
+				cc = "rgb(" + str(50*i+50) + ", " + str(190+i*6) + ", " + str(200+i*50) + ")"
+				xx = data_gr.loc[:,f1]
+				yy = data_gr.loc[:,f2]
+				zz = data_gr.loc[:,f3]
+				#ax.scatter(x, y, z, label=label_gr)
+				scatter = dict(
+					mode = "markers",
+					name = label_gr,
+					type = "scatter3d",    
+					x = data_gr.loc[:,f1], y = data_gr.loc[:,f2], z = data_gr.loc[:,f3],
+					marker = dict( size=2+i*2, color=cc )
+				)
+				clustered_data.append(scatter)
+				cluster = dict(
+					alphahull = 7,
+					name = label_gr,
+					opacity = 0.1,
+					type = "mesh3d",    
+					x = xx, y = yy, z = zz,
+					color = c
+				)
+				clustered_data.append(cluster)
+			layout = dict(
+				title = '3d point clustering',
+				scene = dict(
+					xaxis = dict( zeroline=False, title=f1 ),
+					yaxis = dict( zeroline=False, title=f2 ),
+					zaxis = dict( zeroline=False, title=f3 ),
+				)
 			)
-		)
-		fig = dict( data=[scatter, clustersm, clustersb], layout=layout )
-		plot(fig, filename="./{0}/3D_{1}_{2}_{3}.html".format(folder,f1,f2,f3), auto_open=False)
+			fig = dict( data=clustered_data, layout=layout )
+			plot(fig, filename="./{0}/3D_{1}_{2}_{3}.html".format(folder,f1,f2,f3), auto_open=False)
 
 	return plot_3d_clustering, find_mean_std, plot_box, plot_histograms, plot_histograms_grouped, plot_scatter_3d, plot_scatter, plot_corr
 
@@ -371,14 +362,13 @@ corr()
 
 
 # Plotting scatter
-#if dataset_name == 'breast_cancer':
-for i in range(len(data.iloc[0])-1):
+'''for i in range(len(data.iloc[0])-1):
 	j = 1
 	for j in range((i+j),len(data.iloc[0])-1):
 		col_name1 = data.iloc[:,i].name
 		col_name2 = data.iloc[:,j].name
 		print('\n Plotting scatter of ', col_name1, 'and ', col_name2)
-		scatter(col_name1, col_name2)
+		scatter(col_name1, col_name2)'''
 
 	
 #Plotting 3D scatter and clustering for custom features
