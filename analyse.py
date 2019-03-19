@@ -12,10 +12,11 @@ import plotly as py
 import plotly.graph_objs as go
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 import sklearn
-from sklearn import datasets, model_selection, metrics, neighbors
+from sklearn import datasets, model_selection, metrics, neighbors, preprocessing
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split, cross_val_score
+from matplotlib.colors import ListedColormap
 
 
 def load_data(input_name):
@@ -57,14 +58,14 @@ def parser_assign():
 	return d_name
 
 
-def read_data():
+def read_data(df, feature_n, tar):
 	'''Copying data from dataset to Data Frame'''
-	data = pd.DataFrame(data = dataset['data'])
-	data.columns = dataset['feature_names']			# assigning feature names to the names of the columns
+	data = pd.DataFrame(data = df)
+	data.columns = feature_n			# assigning feature names to the names of the columns
 	try:
-		data['target'] = pd.Categorical(pd.Series(dataset.target).map(lambda x: dataset.target_names[x]))
+		data['target'] = pd.Categorical(pd.Series(tar).map(lambda x: dataset.target_names[x]))
 	except:
-		data['target'] = dataset['target']
+		data['target'] = tar
 	
 	if dataset_name == 'breast_cancer':		# if this is breast cancer dataset we choose only mean values for visalisation (10 out of 30 features)
 		data1 = data.iloc[:,:10]
@@ -200,7 +201,7 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 			plt.scatter(x, y)
 		plt.scatter(mean_f1, mean_f2, color='g', marker='D', label='mean value')
 		plt.legend(loc='upper right')
-		plt.savefig(("./{0}/{1}-{2}.png".format(folder, f1, f2)), bbox_inches='tight')
+		plt.savefig(("./{0}/{1}-{2}.png".format(folder, f1.replace('/','-'), f2.replace('/','-'))), bbox_inches='tight')
 		plt.close('all')
 
 
@@ -231,7 +232,7 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 		ax.set_ylabel(f2)
 		ax.set_zlabel(f3)
 		ax.legend(loc='upper right')
-		plt.savefig(("./{0}/3D_{1}-{2}-{3}.png".format(folder, f1, f2, f3)))
+		plt.savefig(("./{0}/3D_{1}-{2}-{3}.png".format(folder, f1.replace('/','-'), f2.replace('/','-'), f3.replace('/','-'))))
 		#plt.show()
 		plt.close('all')
 
@@ -273,7 +274,7 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 					#boxmode='group'
 				)
 				fig = go.Figure(data=data, layout=layout)
-				plot(fig, filename="./{0}/box_plot_{1}.html".format(folder,columns[i]), auto_open=False)
+				plot(fig, filename="./{0}/box_plot_{1}.html".format(folder,columns[i].replace('/','-')), auto_open=False)
 
 
 	def plot_3d_clustering (f1, f2, f3):
@@ -294,7 +295,6 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 				xx = data_gr.loc[:,f1]
 				yy = data_gr.loc[:,f2]
 				zz = data_gr.loc[:,f3]
-				#ax.scatter(x, y, z, label=label_gr)
 				scatter = dict(
 					mode = "markers",
 					name = label_gr,
@@ -321,9 +321,61 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 				)
 			)
 			fig = dict( data=clustered_data, layout=layout )
-			plot(fig, filename="./{0}/3D_{1}_{2}_{3}.html".format(folder,f1,f2,f3), auto_open=False)
+			plot(fig, filename="./{0}/3D_{1}_{2}_{3}.html".format(folder,f1.replace('/','-'),f2.replace('/','-'),f3.replace('/','-')), auto_open=False)
 
 	return plot_3d_clustering, find_mean_std, plot_box, plot_histograms, plot_histograms_grouped, plot_scatter_3d, plot_scatter, plot_corr
+
+def set_data_analyse(f1, f2):
+	X = np.empty(shape=[len(dataset.data), 2])
+	y = np.empty(shape=[len(dataset.data),])
+	l = []
+	k = 0
+	for j, c in enumerate(dataset.feature_names):
+		if dataset.feature_names[j] == f1 or dataset.feature_names[j] == f2: 
+			for i, s in enumerate(dataset.data):
+				X[i,k] = dataset.data[i,j]
+				y[i] = dataset.target[i]
+			l.append(dataset.feature_names[j])
+			k = k+1
+
+	X[:,0] = preprocessing.normalize([X[:,0]])
+	X[:,1] = preprocessing.normalize([X[:,1]])
+	return X, y, l
+
+def plot_results_2D(X_t, y_t, l, name):
+	# Create color maps
+	folder = "prediction_results_{0}".format(dataset_name)
+	if not os.path.exists(folder):
+		os.makedirs(folder)
+	
+	cmap_light = ListedColormap(['#FFAAAA', '#AAAAFF', '#AAFFAA'])
+	cmap_bold = ListedColormap(['#FF0000', '#0000FF', '#00FF00'])
+
+	# Calculating prediction desicion mesh based on our algorithm
+	x_min, x_max = X_t[:, 0].min() - 0.01, X_t[:, 0].max() + 0.01
+	y_min, y_max = X_t[:, 1].min() - 0.01, X_t[:, 1].max() + 0.01
+	xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.0001), np.arange(y_min, y_max, 0.0001))
+	
+	Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+	Z = Z.reshape(xx.shape)
+	
+	fig = plt.figure()
+	plt.xlim(xx.min(), xx.max())
+	plt.ylim(yy.min(), yy.max())
+	plt.xlabel(l[0])
+	plt.ylabel(l[1])	
+	
+	# Plotting prediction desicion mesh based on our algorithm
+	plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
+	
+	# Plot testing points to check whether they are inside the predicted class 
+	plt.scatter(X_t[:,0],X_t[:,1], c=y_t, cmap=cmap_bold, edgecolor='k')
+
+	#plt.legend((X_test[:,0], X_test[:,1]), (dataset.target_names[0], dataset.target_names[1]), loc='lower right')
+	plt.title = name
+	plt.savefig(("./{0}/{1}_{2}_{3}.png".format(folder, name, l[0].replace('/','-'), l[1].replace('/','-'))), bbox_inches='tight')
+	#plt.show()
+	plt.close('all')
 
 #----------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------
@@ -337,23 +389,23 @@ dataset, classification_flag = load_data(dataset_name)
 print('Classification flag value: ', classification_flag)
 
 # Transrferring sklearn dataset to Data Frame
-data, grouped = read_data()
+data, grouped = read_data(dataset['data'], dataset['feature_names'], dataset['target'])
 call_3d_clustering, mean_std, box, histograms, histograms_grouped, scatter_3d, scatter, corr = all_functions(classification_flag, data, grouped) 
 
 # Calculating summary statistics
 mean_std()
 
 # Plotting histograms
-print('\n Plotting all histograms into one figure')						#Plotting one histogram for all the features
+'''print('\n Plotting all histograms into one figure')						#Plotting one histogram for all the features
 histograms()
 if classification_flag == True:
 	print('\n Plotting all histograms into one figure grouped by target')#Plotting one histogram for all the features grouped by diagnosis
-	histograms_grouped()
+	histograms_grouped()'''
 
 
 #Plotting Box plot
-print('\n Plotting box plots')
-box()
+'''print('\n Plotting box plots')
+box()'''
 
 
 # Plotting correlations heatmap
@@ -372,7 +424,7 @@ corr()
 
 	
 #Plotting 3D scatter and clustering for custom features
-if dataset_name == 'breast_cancer':
+'''if dataset_name == 'breast_cancer':
 	print('\n Plotting 3D scatters')
 	scatter_3d('mean concave points', 'mean symmetry', 'mean compactness')
 	scatter_3d('mean concave points', 'mean smoothness', 'mean compactness')
@@ -383,24 +435,139 @@ if dataset_name == 'breast_cancer':
 	call_3d_clustering ('mean concave points', 'mean perimeter', 'mean compactness')
 if dataset_name == 'boston':
 	print('\n Plotting 3D scatters')
-	scatter_3d('RM', 'LSTAT', 'DIS')
+	scatter_3d('RM', 'LSTAT', 'DIS')'''
 
+#---------------------------------------------------------------------------
 
-# Performing principal component analysis (PCA)
-#print('\nPerforming PCA')
+#-----------CLASSIFICATION ANALYSIS-----------------------------------------
+
+#---------------------------------------------------------------------------
+if dataset_name == 'iris':
+	feature1 = 'petal length (cm)'
+	feature2 = 'petal width (cm)'
+if dataset_name == 'breast_cancer':
+	feature1 = 'mean concave points'
+	feature2 = 'mean perimeter'
+if dataset_name == 'wine':
+	feature1 = 'proline'
+	feature2 = 'od280/od315_of_diluted_wines'
+flag = False
+
 if classification_flag == True:
+
+	# Performing principal component analysis (PCA)
+	#print('\nPerforming PCA')
 	from sklearn.decomposition import PCA
 	pca = PCA(n_components=2)
 	proj = pca.fit_transform(dataset.data)
 	plt.scatter(proj[:, 0], proj[:, 1], c=dataset.target) 
 	plt.colorbar() 
 	plt.title = 'PCA'
-	plt.show()
+	#plt.show()
+	plt.close('all')
 
-# Performing KNeighborsClassifier 
-if classification_flag == True:
+
+
+	# Performing GaussianNB on all the features
 	print('/////////////////////////////////////////////')
-	print('Performing KNeighborsClassifier \n')
+	print('Performing GaussianNB on all the features\n')
+	X = dataset.data
+	y = dataset.target
+
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	#print('X dataset: ', X.shape, 'y targets: ', y.shape, 'train data shape: ', X_train.shape, 'test data shape: ', X_test.shape)
+
+	clf = GaussianNB()
+	clf.fit(X_train,y_train)
+	y_pred = clf.predict(X_test)
+
+	print('GaussianNB score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
+	print(metrics.confusion_matrix(y_test, y_pred))
+	#print(metrics.classification_report(y_test, y_pred))
+
+	# Performing Gaussian on two chosen features
+	#if dataset_name == 'breast_cancer':
+	print('/////////////////////////////////////////////')
+	print('Performing GaussianNB on 2 features\n')
+	X, y, features = set_data_analyse(feature1, feature2)
+	classifier_name = 'GaussianNB'
+		
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	#print('X_train_f1: ', np.max(X_train[:,0]), np.min(X_train[:,0]), features[0])
+	#print('X_train_f2: ', np.max(X_train[:,1]), np.min(X_train[:,1]), features[1])
+	#print('X_train size: ', X_train.shape, 'y_train size: ', y_train.shape)
+
+	#finding best parameters for SVC
+	'''from sklearn.model_selection import GridSearchCV
+	print("Fitting the classifier to the training set")
+	param_grid = {'C': [0.01, 0.1, 1, 10, 100], 'kernel': ['rbf', 'linear']}
+	clf = GridSearchCV(SVC(class_weight='balanced'), param_grid)
+	clf = clf.fit(X_train, y_train)
+	print("Best estimator found by grid search:")
+	print(clf.best_estimator_)'''
+
+	clf = GaussianNB().fit(X_train, y_train)
+	plot_results_2D(X_test, y_test, features, classifier_name)
+	y_pred = clf.predict(X_test)
+	print('GaussianNB on 2 features score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
+	print(metrics.confusion_matrix(y_test, y_pred))
+	#print(metrics.classification_report(y_test, y_pred))
+
+	
+
+	# Performing SVC on all the features
+	#if classification_flag == True:
+	print('/////////////////////////////////////////////')
+	print('Performing SVC on all the features\n')
+	from sklearn.svm import SVC
+	X = dataset.data
+	y = dataset.target
+	
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	clf = SVC(kernel='linear', gamma='auto').fit(X_train, y_train)
+	y_pred = clf.predict(X_test)
+	print('SVC score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
+	print(metrics.confusion_matrix(y_test, y_pred))
+	#print(metrics.classification_report(y_test, y_pred))
+
+	# Performing SVC on two chosen features
+	#if dataset_name == 'breast_cancer':
+	print('/////////////////////////////////////////////')
+	print('Performing SVC on 2 features\n')
+	X, y, features = set_data_analyse(feature1, feature2)
+	classifier_name = 'SVC'
+	
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	#print('X_train_f1: ', np.max(X_train[:,0]), np.min(X_train[:,0]), features[0])
+	#print('X_train_f2: ', np.max(X_train[:,1]), np.min(X_train[:,1]), features[1])
+	#print('X_train size: ', X_train.shape, 'y_train size: ', y_train.shape)
+
+	#finding best parameters for SVC
+	'''from sklearn.model_selection import GridSearchCV
+	print("Fitting the classifier to the training set")
+	param_grid = {'C': [0.01, 0.1, 1, 10, 100], 'kernel': ['rbf', 'linear']}
+	clf = GridSearchCV(SVC(class_weight='balanced'), param_grid)
+	clf = clf.fit(X_train, y_train)
+	print("Best estimator found by grid search:")
+	print(clf.best_estimator_)'''
+
+	clf = SVC(C=100, kernel='rbf', gamma='auto').fit(X_train, y_train)
+	plot_results_2D(X_test, y_test, features, classifier_name)
+	y_pred = clf.predict(X_test)
+	print('SVC on 2 features score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
+	print(metrics.confusion_matrix(y_test, y_pred))
+	#print(metrics.classification_report(y_test, y_pred))
+
+	
+	
+	# Performing KNeighborsClassifier on all the features
+	#if classification_flag == True:
+	print('/////////////////////////////////////////////')
+	print('Performing KNeighborsClassifier on all the features\n')
 	X = dataset.data
 	y = dataset.target
 
@@ -416,67 +583,31 @@ if classification_flag == True:
 	#	print('KNeighborsClassifier with {0} neighbors score: '.format(n), metrics.f1_score(y_test,y_pred,average="macro"))
 
 	print('KNeighborsClassifier score: ', metrics.f1_score(y_test,y_pred,average="macro"))
-	print('cross_val_score: ', cross_val_score(clf, X, y, cv=5))
+	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
 	print(metrics.confusion_matrix(y_test, y_pred))
-	print(metrics.classification_report(y_test, y_pred))
+	#print(metrics.classification_report(y_test, y_pred))
 
-
-# Performing GaussianNB 
-if classification_flag == True:
+	# Performing KNeighborsClassifier for the two chosen columns
+	#if dataset_name == 'breast_cancer':
 	print('/////////////////////////////////////////////')
-	print('Performing GaussianNB \n')
-	X = dataset.data
-	y = dataset.target
+	print('Performing KNeighborsClassifier on 2 features\n')
+	X, y, features = set_data_analyse(feature1, feature2)
+	classifier_name = 'KN'
 
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
-	print('X dataset: ', X.shape, 'y targets: ', y.shape, 'train data shape: ', X_train.shape, 'test data shape: ', X_test.shape)
-
-	clf = GaussianNB()
-	clf.fit(X_train,y_train)
+	
+	clf = KNeighborsClassifier(n_neighbors=4).fit(X_train,y_train)
+	plot_results_2D(X_test, y_test, features, classifier_name)
 	y_pred = clf.predict(X_test)
 
-	print('GaussianNB score: ', metrics.f1_score(y_test,y_pred,average="macro"))
-	print(metrics.confusion_matrix(y_test, y_pred))
-	print(metrics.classification_report(y_test, y_pred))
-
-# Performing SVC 
-if classification_flag == True:
-	print('/////////////////////////////////////////////')
-	print('Performing SVC\n')
-	from sklearn.svm import SVC
-	X = dataset.data
-	y = dataset.target
-
-	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
-	clf = SVC(kernel='linear')
-	clf.fit(X_train, y_train)
-	y_pred = clf.predict(X_test)
-	print('SVC score: ', metrics.f1_score(y_test,y_pred,average="macro"))
-	print(metrics.confusion_matrix(y_test, y_pred))
-	print(metrics.classification_report(y_test, y_pred))
-
-
-# Performing KNeighborsClassifier for the three chosen columns
-'''if dataset_name == 'breast_cancer':
-	X = np.empty(shape=[len(dataset.data), 3])
-	y = np.empty(shape=[len(dataset.data),])
-	k = 0
-	for j, c in enumerate(dataset.feature_names):
-		if dataset.feature_names[j] == 'mean concave points' or dataset.feature_names[j] == 'mean perimeter' or dataset.feature_names[j] == 'mean compactness': 
-			for i, s in enumerate(dataset.data):
-				#for j, c in enumerate(dataset.feature_names):
-				X[i,k] = dataset.data[i,j]
-				y[i] = dataset.target[i]
-			k = k+1
-
-	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
-	#print('X dataset: ', X.shape, 'y targets: ', y.shape, 'train data shape: ', X_train.shape, 'test data shape: ', X_test.shape)
-	for n in range(1,11):
+	'''for n in range(1,11):
 		clf = KNeighborsClassifier(n_neighbors=n).fit(X_train,y_train)
 		y_pred = clf.predict(X_test)
-		print('KNeighborsClassifier (3 features) with {0} neighbors score: '.format(n), metrics.f1_score(y_test,y_pred,average="macro"))'''
+		print('KNeighborsClassifier score: ', 'k = ', n, ': ', metrics.f1_score(y_test,y_pred,average="macro"))
+		print(metrics.confusion_matrix(y_test, y_pred))
+		print('KNeighborsClassifier with {0} neighbors score: '.format(n), metrics.f1_score(y_test,y_pred,average="macro"))'''
 
-
-
-
-
+	print('KNeighborsClassifier score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
+	print(metrics.confusion_matrix(y_test, y_pred))
+	#print(metrics.classification_report(y_test, y_pred))
