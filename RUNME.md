@@ -17,3 +17,4 @@ If no files were provided the script will analyse breast_cancer dataset
 - `corr`  for heatmap
 - `box` for boxplots
 - `3D` for 3D plots
+- `results` for classification plots
