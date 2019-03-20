@@ -8,16 +8,6 @@ Loading multiple datasets from scikit-learn, visualizing them and performing bas
 
 -----
 
-### Resources
-Your repository should include the following:
-
-- Python script for your analysis
-- Results figure/saved file
-- Dockerfile for your experiment
-- runtime-instructions in a file named RUNME.md
-
------
-
 ## Research Question
 
 Using breast cancer Wisconsin dataset explore and evaluate multiple approaches performance of three machine learning algorithms (GaussianNB, nearest neighbour and SVC)  in  order  to  choose  the  one  which  will fit best for breast cancer diagnose.
