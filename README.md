@@ -20,16 +20,13 @@ Your repository should include the following:
 
 ## Research Question
 
-Using breast cancer Wisconsin dataset explore and evaluate three machine learnin algorithms (GaussianNB, nearest neighbour and SVC) in  order  to  choose  the  one  which  will fit best for breast cancer diagnose.
+Using breast cancer Wisconsin dataset explore and evaluate multiple approaches performance of three machine learning algorithms (GaussianNB, nearest neighbour and SVC)  in  order  to  choose  the  one  which  will fit best for breast cancer diagnose.
 
 ### Abstract
 
-4 sentence longer explanation about your research question. Include:
-
-- opportunity (what data do we have)
-- challenge (what is the "problem" we could solve with this dataset)
-- action (how will we try to solve this problem/answer this question)
-- resolution (what did we end up producing)
+Breast cancer dataset contains features computed from a digitized image of a fine needle aspirate (FNA) of a breast mass. They describe the characteristics of the cell nuclei present in the image. The mean, standard error, and “worst” or largest (mean of the three largest values) of these features were computed for each image, resulting in 30 features. All of the features are linearly separable and used to predict the diagnosis: malignant or benign. 
+For training purposes, we used 10 mean features for general analysis and visualization of the data. Then we compared the performance of classificators of our choice while using two approaches: predicting in 2-D space using 2 "best" features and predicting using all of the 30 features.  
+Based on resulting scores we found out that in our case all of the classificators showed better results in 30-dimensional normalized space that brings us to a conclusion that 2 features are not enough to predict medical diagnosis. 
 
 ### Introduction
 
