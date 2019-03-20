@@ -29,8 +29,8 @@ Based on resulting scores we found out that in our case all of the classificator
 
 ### Introduction
 
-The dataset used in our project is a training Scikit-learn dataset. It can be downloaded from their page `https://scikit-learn.org/stable/datasets/index.html#toy-datasets` or imported from `sklearn` library. It contains features computed from a digitized image of a fine needle aspirate (FNA) of a breast mass. They describe the characteristics of the cell nuclei present in the image. The mean, standard error, and “worst” or largest (mean of the three largest values) of these features were computed for each image, resulting in 30 features. All of the features are linearly separable and used to predict the diagnosis: malignant or benign.
-(Source: `https://scikit-learn.org/stable/datasets/index.html#breast-cancer-wisconsin-diagnostic-dataset`)
+The dataset used in our project is a training Scikit-learn dataset. It can be downloaded from their page [https://scikit-learn.org/stable/datasets/index.html#toy-datasets] or imported from `sklearn` library. It contains features computed from a digitized image of a fine needle aspirate (FNA) of a breast mass. They describe the characteristics of the cell nuclei present in the image. The mean, standard error, and “worst” or largest (mean of the three largest values) of these features were computed for each image, resulting in 30 features. All of the features are linearly separable and used to predict the diagnosis: malignant or benign.
+(Source: [https://scikit-learn.org/stable/datasets/index.html#breast-cancer-wisconsin-diagnostic-dataset])
 
 ### Methods
 
