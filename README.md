@@ -38,6 +38,8 @@ Nearest Neighbors and Gaussian NB were chosen for their simplicity. SVC was chos
 
 Below is the histogram of the features grouped by diagnosis, and the correlation heatmap. When looking at the histogram we notice that the distribution of malignant cells appears to be shifted to the right and shaped differently for several of the features. For 2-D space predictions `mean concave points` and  `mean perimeter` were chosen because they are well related but also we've noticed that they don't have many outliers (see scatter plot). 
 
+![hist](https://user-images.githubusercontent.com/46948881/54732376-c75e3500-4b69-11e9-8e85-e1dbfd2cb80d.jpg)
+
 ![corr+scatter](https://user-images.githubusercontent.com/46948881/54730580-169f6800-4b60-11e9-9092-d93d86202518.jpg)
 Brief (2 paragraph) description about your results. Include:
 
