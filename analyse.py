@@ -351,7 +351,7 @@ def set_data_analyse(f1, f2):
 
 def plot_results_2D(X_t, y_t, l, name, clf, cvs):
 	# Create color maps
-	folder = "prediction_results_{0}".format(dataset_name)
+	folder = "results_{0}".format(dataset_name)
 	if not os.path.exists(folder):
 		os.makedirs(folder)
 	
@@ -396,7 +396,7 @@ def do_analyse(feature1, feature2):
 	5) Plot a comparison boxplot of the cross_val_scores of the results grouped by the algorithm
 	
 	"""	
-	folder = "prediction_results_{0}".format(dataset_name)
+	folder = "results_{0}".format(dataset_name)
 	if not os.path.exists(folder):
 		os.makedirs(folder)
 
@@ -407,7 +407,7 @@ def do_analyse(feature1, feature2):
 	# prepare models
 	models = []
 	models.append(('NB', GaussianNB()))
-	models.append(('SVM', SVC()))
+	models.append(('SVM', SVC(gamma='auto')))
 	models.append(('KNN', KNeighborsClassifier()))
 
 	# evaluate each model in turn
@@ -571,6 +571,7 @@ def do_analyse(feature1, feature2):
 	X = normalize(X, axis=0)
 	kfold = model_selection.KFold(n_splits=10, random_state=seed)
 	cvs = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
+	print('mean cvs: ', np.mean(cvs))
 	results1.append(cvs)
 	names.append('KNN')
 
@@ -595,7 +596,6 @@ def do_analyse(feature1, feature2):
 	classifier_name = 'KN'
 	kfold = model_selection.KFold(n_splits=10, random_state=seed)
 	cvs = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
-	print('mean cvs: ', mean(cvs))
 	results2.append(cvs)
 
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
@@ -683,12 +683,12 @@ for i in range(len(data.iloc[0])-1):
 #Plotting 3D scatter and clustering for custom features
 if dataset_name == 'breast_cancer':
 	print('\n Plotting 3D scatters')
-	scatter_3d('worst smoothness', 'mean texture', 'worst area')
-	#scatter_3d('mean concave points', 'mean smoothness', 'mean compactness')
+	#scatter_3d('worst smoothness', 'mean texture', 'worst area')
+	scatter_3d('mean concave points', 'mean smoothness', 'mean compactness')
 	scatter_3d('mean concave points', 'mean perimeter', 'mean compactness')
 	print('\n Plotting 3D scatters with clustering')
-	call_3d_clustering ('worst smoothness', 'mean texture', 'worst area')
-	#call_3d_clustering ('mean concave points', 'mean smoothness', 'mean compactness')
+	#call_3d_clustering ('worst smoothness', 'mean texture', 'worst area')
+	call_3d_clustering ('mean concave points', 'mean smoothness', 'mean compactness')
 	call_3d_clustering ('mean concave points', 'mean perimeter', 'mean compactness')
 if dataset_name == 'boston':
 	print('\n Plotting 3D scatters')
