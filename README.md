@@ -65,4 +65,6 @@ https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm#Dimension_reduction
 
 https://machinelearningmastery.com/compare-machine-learning-algorithms-python-scikit-learn/
 
+https://github.com/gkiar/cebd1160_project_template/tree/gkexample
+
 -------
