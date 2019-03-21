@@ -4,19 +4,25 @@ import numpy as np
 import pandas as pd
 import argparse
 import csv
-import matplotlib.pyplot as plt
 import string, math, os, random
-from mpl_toolkits.mplot3d import Axes3D
-from plotly import tools
+
 import plotly as py
 import plotly.graph_objs as go
+from plotly import tools
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+from mpl_toolkits.mplot3d import Axes3D
+
 import sklearn
 from sklearn import datasets, model_selection, metrics, neighbors, preprocessing
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split, cross_val_score
-from matplotlib.colors import ListedColormap
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import normalize
 
 
 def load_data(input_name):
@@ -199,7 +205,7 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 			x = df.loc[:,f1]
 			y = df.loc[:,f2]
 			plt.scatter(x, y)
-		plt.scatter(mean_f1, mean_f2, color='g', marker='D', label='mean value')
+		#plt.scatter(mean_f1, mean_f2, color='g', marker='D', label='mean value')
 		plt.legend(loc='upper right')
 		plt.savefig(("./{0}/{1}-{2}.png".format(folder, f1.replace('/','-'), f2.replace('/','-'))), bbox_inches='tight')
 		plt.close('all')
@@ -338,11 +344,12 @@ def set_data_analyse(f1, f2):
 			l.append(dataset.feature_names[j])
 			k = k+1
 
-	X[:,0] = preprocessing.normalize([X[:,0]])
-	X[:,1] = preprocessing.normalize([X[:,1]])
+	#scaler = StandardScaler()
+	#X = scaler.fit_transform(X)
+	X = normalize(X, axis=0)
 	return X, y, l
 
-def plot_results_2D(X_t, y_t, l, name):
+def plot_results_2D(X_t, y_t, l, name, clf, cvs):
 	# Create color maps
 	folder = "prediction_results_{0}".format(dataset_name)
 	if not os.path.exists(folder):
@@ -360,6 +367,7 @@ def plot_results_2D(X_t, y_t, l, name):
 	Z = Z.reshape(xx.shape)
 	
 	fig = plt.figure()
+	fig.suptitle(name + ' (mean_cvs = ' + str(cvs) + ')')
 	plt.xlim(xx.min(), xx.max())
 	plt.ylim(yy.min(), yy.max())
 	plt.xlabel(l[0])
@@ -371,10 +379,259 @@ def plot_results_2D(X_t, y_t, l, name):
 	# Plot testing points to check whether they are inside the predicted class 
 	plt.scatter(X_t[:,0],X_t[:,1], c=y_t, cmap=cmap_bold, edgecolor='k')
 
-	#plt.legend((X_test[:,0], X_test[:,1]), (dataset.target_names[0], dataset.target_names[1]), loc='lower right')
-	plt.title = name
+	#plt.title = name + ', mean_cvs = ' + str(cvs)
 	plt.savefig(("./{0}/{1}_{2}_{3}.png".format(folder, name, l[0].replace('/','-'), l[1].replace('/','-'))), bbox_inches='tight')
+	plt.close('all')
+
+def do_analyse(feature1, feature2):
+	"""	
+	1) Analyze GaussianNB, SVC and KNN without adjusting their parameters 
+		- on all the features of the dataset
+		- on 2 chosen features of the dataset 
+	2) Plot a comparison boxplot of the cross_val_scores of the results grouped by algorithm 
+	3) Analyze GaussianNB, SVC and KNN with optimization 
+		- on all the features of the dataset
+		- on 2 chosen features of the dataset
+	4) Plot visualization of the predicted areas in 2-D space
+	5) Plot a comparison boxplot of the cross_val_scores of the results grouped by the algorithm
+	
+	"""	
+	folder = "prediction_results_{0}".format(dataset_name)
+	if not os.path.exists(folder):
+		os.makedirs(folder)
+
+	# Performing all the models without tuning on both 30 and 2 features and plotting box plots
+	
+	# prepare configuration for cross validation test harness
+	seed = 7
+	# prepare models
+	models = []
+	models.append(('NB', GaussianNB()))
+	models.append(('SVM', SVC()))
+	models.append(('KNN', KNeighborsClassifier()))
+
+	# evaluate each model in turn
+	results1 = []
+	results2 = []
+	names = []
+	scoring = 'accuracy'
+	#for 30 features:
+	X = dataset.data
+	y = dataset.target
+	X = normalize(X, axis=0)
+	#for 2 features:
+	X2, y2, features = set_data_analyse(feature1, feature2)
+	
+	def set_box_color(bp, color):
+		plt.setp(bp['boxes'], color=color)
+		plt.setp(bp['whiskers'], color=color)
+		plt.setp(bp['caps'], color=color)
+		plt.setp(bp['medians'], color=color)
+
+	for name, model in models:
+		kfold = model_selection.KFold(n_splits=5, random_state=seed)
+		cv_results1 = model_selection.cross_val_score(model, X, y, cv=kfold, scoring=scoring)
+		results1.append(cv_results1)
+		cv_results2 = model_selection.cross_val_score(model, X2, y2, cv=kfold, scoring=scoring)
+		results2.append(cv_results2)
+		names.append(name)
+
+	# Comparison box plot of NOT tuned algorithms
+	fig = plt.figure(figsize=(7, 6))
+	bp1 = plt.boxplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, sym='', widths=0.6)
+	bp2 = plt.boxplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, sym='', widths=0.6)
+	set_box_color(bp1, '#D7191C')
+	set_box_color(bp2, '#2C7BB6')
+	plt.xticks(range(0, len(names) * 2, 2), names)
+	plt.xlim(-2, len(names)*2)
+	plt.ylim(0.5, 1)
+	plt.tight_layout()
+	plt.plot([], c='#D7191C', label='30 features')
+	plt.plot([], c='#2C7BB6', label='2 features')
+	plt.legend()
+	plt.title('Comparison of untuned algorithms on 30 an 2 features')
 	#plt.show()
+	plt.savefig(("./{0}/Comparison_NOT_optimized.png".format(folder)), bbox_inches='tight')
+	plt.close('all')
+
+	results1 = []
+	results2 = []
+	names = []
+
+	# Performing principal component analysis (PCA)
+	#print('\nPerforming PCA')
+	from sklearn.decomposition import PCA
+	pca = PCA(n_components=2)
+	proj = pca.fit_transform(dataset.data)
+	plt.scatter(proj[:, 0], proj[:, 1], c=dataset.target) 
+	plt.colorbar() 
+	plt.title = 'PCA'
+	#plt.show()
+	plt.close('all')
+
+
+
+	# Performing GaussianNB on all the features
+	print('/////////////////////////////////////////////')
+	print('Performing GaussianNB on all the features\n')
+	clf = GaussianNB()
+	X = dataset.data
+	y = dataset.target
+	X = normalize(X, axis=0)
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	cvs = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
+	results1.append(cvs)
+	names.append('NB')
+
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	clf.fit(X_train,y_train)
+	y_pred = clf.predict(X_test)
+	print('GaussianNB score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cvs))
+	print(metrics.confusion_matrix(y_test, y_pred))
+
+	
+	# Performing Gaussian on two chosen features
+	print('/////////////////////////////////////////////')
+	print('Performing GaussianNB on 2 features\n')
+	clf = GaussianNB()
+	X, y, features = set_data_analyse(feature1, feature2)
+	classifier_name = 'GaussianNB'
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	cvs = cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
+	results2.append(cvs)
+
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	clf.fit(X_train, y_train)
+	plot_results_2D(X_test, y_test, features, classifier_name, clf, np.mean(cvs))
+	y_pred = clf.predict(X_test)
+	print('GaussianNB on 2 features score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cvs))
+	print(metrics.confusion_matrix(y_test, y_pred))
+	#cv_results2 = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
+
+
+
+
+	# Performing SVC on all the features
+	print('/////////////////////////////////////////////')
+	print('Performing SVC on all the features\n')
+	clf = SVC(C=100, kernel='rbf', gamma='scale')
+	X = dataset.data
+	y = dataset.target
+	X = normalize(X, axis=0)
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	cvs = cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
+	results1.append(cvs)
+	names.append('SVC')
+	
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	clf.fit(X_train, y_train)
+	y_pred = clf.predict(X_test)
+	kfold = model_selection.KFold(n_splits=5, random_state=seed)
+	print('SVC score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cvs))
+	print(metrics.confusion_matrix(y_test, y_pred))
+
+	
+	# Performing SVC on two chosen features
+	print('/////////////////////////////////////////////')
+	print('Performing SVC on 2 features\n')
+	clf = SVC(C=100, kernel='rbf', gamma='scale')
+	X, y, features = set_data_analyse(feature1, feature2)
+	classifier_name = 'SVC'
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	cvs = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
+	results2.append(cvs)
+
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	#finding best parameters for SVC
+	'''from sklearn.model_selection import GridSearchCV
+	print("Fitting the classifier to the training set")
+	param_grid = {'C': [0.01, 0.1, 1, 10, 100], 'kernel': ['rbf', 'linear']}
+	clf = GridSearchCV(SVC(class_weight='balanced'), param_grid)
+	clf = clf.fit(X_train, y_train)
+	print("Best estimator found by grid search:")
+	print(clf.best_estimator_)'''
+	clf.fit(X_train, y_train)
+	plot_results_2D(X_test, y_test, features, classifier_name, clf, np.mean(cvs))
+	y_pred = clf.predict(X_test)
+	print('SVC on 2 features score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cvs))
+	print(metrics.confusion_matrix(y_test, y_pred))
+
+	
+	
+	# Performing KNeighborsClassifier on all the features
+	print('/////////////////////////////////////////////')
+	print('Performing KNeighborsClassifier on all the features\n')
+	clf = KNeighborsClassifier(n_neighbors=1, weights='uniform')
+	X = dataset.data
+	y = dataset.target
+	X = normalize(X, axis=0)
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	cvs = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
+	results1.append(cvs)
+	names.append('KNN')
+
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	clf.fit(X_train,y_train)
+	y_pred = clf.predict(X_test)
+	'''for n in range(1,11):
+		clf = KNeighborsClassifier(n_neighbors=n).fit(X_train,y_train)
+		y_pred = clf.predict(X_test)
+		print('KNeighborsClassifier with {0} neighbors score: '.format(n), metrics.f1_score(y_test,y_pred,average="macro"))'''
+	print('KNeighborsClassifier score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cvs))
+	print(metrics.confusion_matrix(y_test, y_pred))
+
+
+
+	# Performing KNeighborsClassifier for the two chosen columns
+	print('/////////////////////////////////////////////')
+	print('Performing KNeighborsClassifier on 2 features\n')
+	clf = KNeighborsClassifier(n_neighbors=5, weights='uniform')
+	X, y, features = set_data_analyse(feature1, feature2)
+	classifier_name = 'KN'
+	kfold = model_selection.KFold(n_splits=10, random_state=seed)
+	cvs = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
+	print('mean cvs: ', mean(cvs))
+	results2.append(cvs)
+
+	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
+	clf.fit(X_train,y_train)
+	plot_results_2D(X_test, y_test, features, classifier_name, clf, np.mean(cvs))
+	y_pred = clf.predict(X_test)
+	'''for n in range(1,11):
+		clf = KNeighborsClassifier(n_neighbors=n, weights='uniform').fit(X_train,y_train)
+		y_pred = clf.predict(X_test)
+		print('KNeighborsClassifier score: ', 'k = ', n, ': ', metrics.f1_score(y_test,y_pred,average="macro"))
+		print(metrics.confusion_matrix(y_test, y_pred))
+		print('KNeighborsClassifier with {0} neighbors score: '.format(n), metrics.f1_score(y_test,y_pred,average="macro"))'''
+	print('KNeighborsClassifier score: ', metrics.f1_score(y_test,y_pred,average="macro"))
+	print('cross_val_score mean: ', np.mean(cvs))
+	print(metrics.confusion_matrix(y_test, y_pred))
+	#print(metrics.classification_report(y_test, y_pred))
+
+
+	# Comparison box plot of tuned algorithms
+	fig = plt.figure(figsize=(7, 6))
+	bp1 = plt.boxplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, sym='', widths=0.6)
+	bp2 = plt.boxplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, sym='', widths=0.6)
+	set_box_color(bp1, '#D7191C')
+	set_box_color(bp2, '#2C7BB6')
+	#m = max([max(results1[i]) for i in range(len(results1))])
+	#plt.hlines(m, xmin=-2, xmax=len(names)*2, colors='k', linestyles='solid', label='best score')
+	plt.xticks(range(0, len(names) * 2, 2), names)
+	plt.xlim(-2, len(names)*2)
+	#plt.ylim(0.5, 1)
+	plt.tight_layout()
+	plt.plot([], c='#D7191C', label='30 features')
+	plt.plot([], c='#2C7BB6', label='2 features')
+	plt.legend()
+	plt.title = 'Comparison of adjusted algorithms on 30 an 2 features'
+	#plt.show()
+	plt.savefig(("./{0}/Comparison_optimized.png".format(folder)), bbox_inches='tight')
 	plt.close('all')
 
 #----------------------------------------------------------------------------------------------------------
@@ -396,16 +653,16 @@ call_3d_clustering, mean_std, box, histograms, histograms_grouped, scatter_3d, s
 mean_std()
 
 # Plotting histograms
-'''print('\n Plotting all histograms into one figure')						#Plotting one histogram for all the features
+print('\n Plotting all histograms into one figure')						#Plotting one histogram for all the features
 histograms()
 if classification_flag == True:
 	print('\n Plotting all histograms into one figure grouped by target')#Plotting one histogram for all the features grouped by diagnosis
-	histograms_grouped()'''
+	histograms_grouped()
 
 
 #Plotting Box plot
-'''print('\n Plotting box plots')
-box()'''
+print('\n Plotting box plots')
+box()
 
 
 # Plotting correlations heatmap
@@ -414,34 +671,31 @@ corr()
 
 
 # Plotting scatter
-'''for i in range(len(data.iloc[0])-1):
+for i in range(len(data.iloc[0])-1):
 	j = 1
 	for j in range((i+j),len(data.iloc[0])-1):
 		col_name1 = data.iloc[:,i].name
 		col_name2 = data.iloc[:,j].name
 		print('\n Plotting scatter of ', col_name1, 'and ', col_name2)
-		scatter(col_name1, col_name2)'''
+		scatter(col_name1, col_name2)
 
 	
 #Plotting 3D scatter and clustering for custom features
-'''if dataset_name == 'breast_cancer':
+if dataset_name == 'breast_cancer':
 	print('\n Plotting 3D scatters')
-	scatter_3d('mean concave points', 'mean symmetry', 'mean compactness')
-	scatter_3d('mean concave points', 'mean smoothness', 'mean compactness')
+	scatter_3d('worst smoothness', 'mean texture', 'worst area')
+	#scatter_3d('mean concave points', 'mean smoothness', 'mean compactness')
 	scatter_3d('mean concave points', 'mean perimeter', 'mean compactness')
 	print('\n Plotting 3D scatters with clustering')
-	call_3d_clustering ('mean concave points', 'mean symmetry', 'mean compactness')
-	call_3d_clustering ('mean concave points', 'mean smoothness', 'mean compactness')
+	call_3d_clustering ('worst smoothness', 'mean texture', 'worst area')
+	#call_3d_clustering ('mean concave points', 'mean smoothness', 'mean compactness')
 	call_3d_clustering ('mean concave points', 'mean perimeter', 'mean compactness')
 if dataset_name == 'boston':
 	print('\n Plotting 3D scatters')
-	scatter_3d('RM', 'LSTAT', 'DIS')'''
+	scatter_3d('RM', 'LSTAT', 'DIS')
 
-#---------------------------------------------------------------------------
 
 #-----------CLASSIFICATION ANALYSIS-----------------------------------------
-
-#---------------------------------------------------------------------------
 if dataset_name == 'iris':
 	feature1 = 'petal length (cm)'
 	feature2 = 'petal width (cm)'
@@ -451,163 +705,7 @@ if dataset_name == 'breast_cancer':
 if dataset_name == 'wine':
 	feature1 = 'proline'
 	feature2 = 'od280/od315_of_diluted_wines'
-flag = False
 
 if classification_flag == True:
+	do_analyse(feature1, feature2)
 
-	# Performing principal component analysis (PCA)
-	#print('\nPerforming PCA')
-	from sklearn.decomposition import PCA
-	pca = PCA(n_components=2)
-	proj = pca.fit_transform(dataset.data)
-	plt.scatter(proj[:, 0], proj[:, 1], c=dataset.target) 
-	plt.colorbar() 
-	plt.title = 'PCA'
-	#plt.show()
-	plt.close('all')
-
-
-
-	# Performing GaussianNB on all the features
-	print('/////////////////////////////////////////////')
-	print('Performing GaussianNB on all the features\n')
-	X = dataset.data
-	y = dataset.target
-
-	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
-	#print('X dataset: ', X.shape, 'y targets: ', y.shape, 'train data shape: ', X_train.shape, 'test data shape: ', X_test.shape)
-
-	clf = GaussianNB()
-	clf.fit(X_train,y_train)
-	y_pred = clf.predict(X_test)
-
-	print('GaussianNB score: ', metrics.f1_score(y_test,y_pred,average="macro"))
-	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
-	print(metrics.confusion_matrix(y_test, y_pred))
-	#print(metrics.classification_report(y_test, y_pred))
-
-	# Performing Gaussian on two chosen features
-	#if dataset_name == 'breast_cancer':
-	print('/////////////////////////////////////////////')
-	print('Performing GaussianNB on 2 features\n')
-	X, y, features = set_data_analyse(feature1, feature2)
-	classifier_name = 'GaussianNB'
-		
-	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
-	#print('X_train_f1: ', np.max(X_train[:,0]), np.min(X_train[:,0]), features[0])
-	#print('X_train_f2: ', np.max(X_train[:,1]), np.min(X_train[:,1]), features[1])
-	#print('X_train size: ', X_train.shape, 'y_train size: ', y_train.shape)
-
-	#finding best parameters for SVC
-	'''from sklearn.model_selection import GridSearchCV
-	print("Fitting the classifier to the training set")
-	param_grid = {'C': [0.01, 0.1, 1, 10, 100], 'kernel': ['rbf', 'linear']}
-	clf = GridSearchCV(SVC(class_weight='balanced'), param_grid)
-	clf = clf.fit(X_train, y_train)
-	print("Best estimator found by grid search:")
-	print(clf.best_estimator_)'''
-
-	clf = GaussianNB().fit(X_train, y_train)
-	plot_results_2D(X_test, y_test, features, classifier_name)
-	y_pred = clf.predict(X_test)
-	print('GaussianNB on 2 features score: ', metrics.f1_score(y_test,y_pred,average="macro"))
-	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
-	print(metrics.confusion_matrix(y_test, y_pred))
-	#print(metrics.classification_report(y_test, y_pred))
-
-	
-
-	# Performing SVC on all the features
-	#if classification_flag == True:
-	print('/////////////////////////////////////////////')
-	print('Performing SVC on all the features\n')
-	from sklearn.svm import SVC
-	X = dataset.data
-	y = dataset.target
-	
-	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
-	clf = SVC(kernel='linear', gamma='auto').fit(X_train, y_train)
-	y_pred = clf.predict(X_test)
-	print('SVC score: ', metrics.f1_score(y_test,y_pred,average="macro"))
-	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
-	print(metrics.confusion_matrix(y_test, y_pred))
-	#print(metrics.classification_report(y_test, y_pred))
-
-	# Performing SVC on two chosen features
-	#if dataset_name == 'breast_cancer':
-	print('/////////////////////////////////////////////')
-	print('Performing SVC on 2 features\n')
-	X, y, features = set_data_analyse(feature1, feature2)
-	classifier_name = 'SVC'
-	
-	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
-	#print('X_train_f1: ', np.max(X_train[:,0]), np.min(X_train[:,0]), features[0])
-	#print('X_train_f2: ', np.max(X_train[:,1]), np.min(X_train[:,1]), features[1])
-	#print('X_train size: ', X_train.shape, 'y_train size: ', y_train.shape)
-
-	#finding best parameters for SVC
-	'''from sklearn.model_selection import GridSearchCV
-	print("Fitting the classifier to the training set")
-	param_grid = {'C': [0.01, 0.1, 1, 10, 100], 'kernel': ['rbf', 'linear']}
-	clf = GridSearchCV(SVC(class_weight='balanced'), param_grid)
-	clf = clf.fit(X_train, y_train)
-	print("Best estimator found by grid search:")
-	print(clf.best_estimator_)'''
-
-	clf = SVC(C=100, kernel='rbf', gamma='auto').fit(X_train, y_train)
-	plot_results_2D(X_test, y_test, features, classifier_name)
-	y_pred = clf.predict(X_test)
-	print('SVC on 2 features score: ', metrics.f1_score(y_test,y_pred,average="macro"))
-	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
-	print(metrics.confusion_matrix(y_test, y_pred))
-	#print(metrics.classification_report(y_test, y_pred))
-
-	
-	
-	# Performing KNeighborsClassifier on all the features
-	#if classification_flag == True:
-	print('/////////////////////////////////////////////')
-	print('Performing KNeighborsClassifier on all the features\n')
-	X = dataset.data
-	y = dataset.target
-
-	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
-	#print('X dataset: ', X.shape, 'y targets: ', y.shape, 'train data shape: ', X_train.shape, 'test data shape: ', X_test.shape)
-	
-	clf = KNeighborsClassifier(n_neighbors=7).fit(X_train,y_train)
-	y_pred = clf.predict(X_test)
-	
-	#for n in range(1,11):
-	#	clf = KNeighborsClassifier(n_neighbors=n).fit(X_train,y_train)
-	#	y_pred = clf.predict(X_test)
-	#	print('KNeighborsClassifier with {0} neighbors score: '.format(n), metrics.f1_score(y_test,y_pred,average="macro"))
-
-	print('KNeighborsClassifier score: ', metrics.f1_score(y_test,y_pred,average="macro"))
-	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
-	print(metrics.confusion_matrix(y_test, y_pred))
-	#print(metrics.classification_report(y_test, y_pred))
-
-	# Performing KNeighborsClassifier for the two chosen columns
-	#if dataset_name == 'breast_cancer':
-	print('/////////////////////////////////////////////')
-	print('Performing KNeighborsClassifier on 2 features\n')
-	X, y, features = set_data_analyse(feature1, feature2)
-	classifier_name = 'KN'
-
-	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
-	
-	clf = KNeighborsClassifier(n_neighbors=4).fit(X_train,y_train)
-	plot_results_2D(X_test, y_test, features, classifier_name)
-	y_pred = clf.predict(X_test)
-
-	'''for n in range(1,11):
-		clf = KNeighborsClassifier(n_neighbors=n).fit(X_train,y_train)
-		y_pred = clf.predict(X_test)
-		print('KNeighborsClassifier score: ', 'k = ', n, ': ', metrics.f1_score(y_test,y_pred,average="macro"))
-		print(metrics.confusion_matrix(y_test, y_pred))
-		print('KNeighborsClassifier with {0} neighbors score: '.format(n), metrics.f1_score(y_test,y_pred,average="macro"))'''
-
-	print('KNeighborsClassifier score: ', metrics.f1_score(y_test,y_pred,average="macro"))
-	print('cross_val_score mean: ', np.mean(cross_val_score(clf, X, y, cv=5)))
-	print(metrics.confusion_matrix(y_test, y_pred))
-	#print(metrics.classification_report(y_test, y_pred))
