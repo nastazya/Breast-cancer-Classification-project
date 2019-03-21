@@ -43,7 +43,7 @@ Below is the histogram of the features grouped by diagnosis, and the correlation
 ![corr+scatter](https://user-images.githubusercontent.com/46948881/54730580-169f6800-4b60-11e9-9092-d93d86202518.jpg)
 
 Before starting with prediction analysis we've normalized our data since the range of our feature values varies widely. 
-At first, we made predictions on 2 features. After optimizing the hyperparameters (`k=5`, `weights='uniform'` in KNN, `C=100` in SVC) we got these results:
+At first, we made predictions on 2 features. After optimizing the hyperparameters (`k=5`, `weights='uniform'` in KNN, `C=100`, `kernel='rbf'` in SVC) we got these results:
  
 - At least 1 figure
 - At least 1 "value" that summarizes either your data or the "performance" of your method
