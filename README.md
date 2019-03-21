@@ -44,6 +44,9 @@ Below is the histogram of the features grouped by diagnosis, and the correlation
 
 Before starting with prediction analysis we've normalized our data since the range of our feature values varies widely. 
 At first, we made predictions on 2 features. After optimizing the hyperparameters (`k=5`, `weights='uniform'` in KNN, `C=100`, `kernel='rbf'` in SVC) we got these results:
+
+![2D_all](https://user-images.githubusercontent.com/46948881/54760516-9bbd6800-4bc6-11e9-8299-3b58b26825a3.png)
+
  
 - At least 1 figure
 - At least 1 "value" that summarizes either your data or the "performance" of your method
