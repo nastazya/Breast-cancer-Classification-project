@@ -43,14 +43,17 @@ Below is the histogram of the features grouped by diagnosis, and the correlation
 ![corr+scatter](https://user-images.githubusercontent.com/46948881/54730580-169f6800-4b60-11e9-9092-d93d86202518.jpg)
 
 Before starting with prediction analysis we've normalized our data since the range of our feature values varies widely. 
-At first, we made predictions on 2 features. After optimizing the hyperparameters (`k=5`, `weights='uniform'` in KNN, `C=100`, `kernel='rbf'` in SVC) we got these results:
+At first, we made predictions on 2 features. After optimizing the hyperparameters (`k=5`, `weights='uniform'` for KNN, `C=100`, `kernel='rbf'` for SVC) we got these results:
 
 ![2D_all](https://user-images.githubusercontent.com/46948881/54760516-9bbd6800-4bc6-11e9-8299-3b58b26825a3.png)
 
+ Next step was to do the same thing on all of the 30 features. We optimized the hyperparameters to `k=1` for KNN and `C=100`, `kernel='rbf'` for SVC. Below is the comparison table with the relsulting values.
  
-- At least 1 figure
-- At least 1 "value" that summarizes either your data or the "performance" of your method
-- A short explanation of both of the above
+ 
+ 
+In order to visualize all of our steps and compare our approaches, we built the comparison box plots of cross-validation scores for each of the algorithms performing 2D-space and 30D-space predictions before and after optimization of the algorithms. The 10-fold cross validation procedure was used to evaluate each algorithm, importantly configured with the same random seed to ensure that the same splits to the training data are performed and that each algorithms is evaluated in precisely the same way.
+ 
+ 
 
 ### Discussion
 Brief (no more than 1-2 paragraph) description about what you did. Include:
