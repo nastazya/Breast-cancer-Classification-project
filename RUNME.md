@@ -9,7 +9,7 @@ docker build -t <image_name> <path>
 docker run -it -v /${PWD}:/${PWD} -w /${PWD} <image_name> <dataset name>
 ```
 where  `<dataset name>` is optional. 
-If no files were provided the script will analyse breast_cancer dataset
+If no files were provided the script will analyse breast_cancer dataset. If regression dataset was provided the script will plot histograms, scatter plots and correlation heatmap.
 
 **3) Observe plots in these folders:**
 - `hist` for histograms
