@@ -1,5 +1,5 @@
 # final_project
-Loading multiple datasets from scikit-learn, visualizing them and performing basic classification algorithms
+Loading multiple datasets from scikit-learn, visualizing them, performing and comparing basic classification algorithms
 
 
 | Name | Date |
@@ -32,10 +32,10 @@ Here are the short description of the classificators we used:
 
 **SVM Classifier**: Building a n-1 dimentional plane maximizing the margin between two classes. [Pseudocode (Section 1.4.7.1)](https://scikit-learn.org/stable/modules/svm.html#mathematical-formulation)
 
-Brief (no more than 1-2 paragraph) description about how you decided to approach solving it. Include:
+Nearest Neighbors and Gaussian NB were chosen for their simplicity. SVC was chosen as it works well high dimensional spaces, that fits our case. 
 
-- pseudocode for this method (either created by you or cited from somewhere else)
-- why you chose this method
+Below is correllation heatmap of our mean features. For 2-D space predictions `mean concative points` and  `mean perimeter` were chosen.
+
 
 ### Results
 
