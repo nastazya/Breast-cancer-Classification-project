@@ -10,7 +10,7 @@ Loading multiple datasets from scikit-learn, visualizing them, performing and co
 
 ## Research Question
 
-Using breast cancer Wisconsin dataset explore and evaluate multiple approaches performance of three machine learning algorithms (GaussianNB, nearest neighbour and SVC)  in  order  to  choose  the  one  which  will fit best for breast cancer diagnose.
+Using breast cancer Wisconsin dataset explore and evaluate multiple approaches performance of three machine learning algorithms (GaussianNB, Nearest Neighbours and SVC)  in  order  to  choose  the  one  which  will fit best for breast cancer diagnose.
 
 ### Abstract
 
@@ -26,11 +26,11 @@ The dataset used in our project is a training Scikit-learn dataset. It can be do
 
 Here are the short description of the classificators we used:
 
-**Nearest Neighbors Classifier**: Finding majority vote of the nearest neighbors of each point: a query point is assigned the data class which has the most representatives within the nearest neighbors of the point. [Pseudocode (Statistical setting and Algorithm)](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm#Dimension_reduction)
+**Nearest Neighbors**: Finding majority vote of the nearest neighbors of each point: a query point is assigned the data class which has the most representatives within the nearest neighbors of the point. [Pseudocode (Statistical setting and Algorithm)](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm#Dimension_reduction)
 
 **Gaussian NB**: Model that assign class labels to problem instances, represented as vectors of feature values, where the class labels are drawn from the training set (assumption is made that the continuous values associated with each class are distributed according to a Gaussian distribution). [Pseudocode](https://scikit-learn.org/stable/modules/naive_bayes.html#gaussian-naive-bayes)
 
-**SVM Classifier**: Building a n-1 dimentional plane maximizing the margin between two classes. [Pseudocode (Section 1.4.7.1)](https://scikit-learn.org/stable/modules/svm.html#mathematical-formulation)
+**SVC**: Building a n-1 dimentional plane maximizing the margin between two classes. [Pseudocode (Section 1.4.7.1)](https://scikit-learn.org/stable/modules/svm.html#mathematical-formulation)
 
 Nearest Neighbors and Gaussian NB were chosen for their simplicity. SVC was chosen as it works well high dimensional spaces, that fits our case. 
 
