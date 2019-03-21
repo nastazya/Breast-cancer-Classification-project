@@ -34,8 +34,9 @@ Here are the short description of the classificators we used:
 
 Nearest Neighbors and Gaussian NB were chosen for their simplicity. SVC was chosen as it works well high dimensional spaces, that fits our case. 
 
-Below is correllation heatmap of our mean features. For 2-D space predictions `mean concative points` and  `mean perimeter` were chosen.
+Below is correlation heatmap and scatter plot of the two features of our choice. For 2-D space predictions `mean concave points` and  `mean perimeter` were chosen.
 
+![corr+scatter](https://user-images.githubusercontent.com/46948881/54730580-169f6800-4b60-11e9-9092-d93d86202518.jpg)
 
 ### Results
 
