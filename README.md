@@ -60,10 +60,8 @@ In order to visualize all the steps and compare our approaches and algorithms, w
 As we can see from the picture, SVC does not provide good results without finding appropriate value `C`. To calculate the best hyperparameters for SVC Classification we used `GridSearchCV` method.
 
 ### Discussion
-Brief (no more than 1-2 paragraph) description about what you did. Include:
 
-- interpretation of whether your method "solved" the problem
-- suggested next step that could make it better.
+Although the score of 2-feature prediction wasn't too bad, it is not high enough to predict the diagnosis. On another hand using 30 features is too costly in real-world datasets. To improve the method we would probably find the best related three features to use in SVC. Then using ROC curves we would try to optimize our parameters in order to minimize the false negative rate.   
 
 ### References
 
