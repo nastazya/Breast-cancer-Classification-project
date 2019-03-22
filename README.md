@@ -51,8 +51,9 @@ At first, we made predictions on 2 features. After optimizing the hyperparameter
  
  ![table of scores](https://user-images.githubusercontent.com/46948881/54793367-6f323c00-4c18-11e9-9c1a-2a7b7a1fa767.jpg)
  
-In order to visualize all of our steps and compare our approaches, we built the comparison box plots of cross-validation scores for each of the algorithms performing 2-D space and 30-D space predictions before and after optimization of the algorithms. The 10-fold cross validation procedure was used to evaluate each algorithm, importantly configured with the same random seed to ensure that the same splits to the training data are performed and that each algorithms is evaluated in precisely the same way.
+In order to visualize all of our steps and compare our approaches, we built the comparison box plots of cross-validation scores for each of the algorithms performing 2-D space and 30-D space predictions before (left plot) and after optimization of the algorithms (right plot). The 10-fold cross validation procedure was used to evaluate each algorithm, importantly configured with the same random seed to ensure that the same splits to the training data are performed and that each algorithms is evaluated in precisely the same way.
  
+ ![Comparison_before and after](https://user-images.githubusercontent.com/46948881/54794966-9ab92480-4c20-11e9-9d3a-6842975258f7.png)
  
 
 ### Discussion
