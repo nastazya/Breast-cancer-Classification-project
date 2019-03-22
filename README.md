@@ -51,11 +51,11 @@ At first, we made predictions on 2 features. After optimizing the hyperparameter
  
  ![table of scores](https://user-images.githubusercontent.com/46948881/54793367-6f323c00-4c18-11e9-9c1a-2a7b7a1fa767.jpg)
  
-We can see that, as expected, SVC is way ahead of other algorithms when performing in high-dimensional spaces. When predicting using 2 features in our case the results don't differentiate much.    
+We can see that, as expected, SVC is way ahead of the other two algorithms when performing in high-dimensional spaces. When predicting using 2 features in our case the results don't differentiate much. We would like to note that in our case we don't want to have misclassifications in the upper right corner of the precision matrix as it means that malignant case was classified as benign. Optimizing algorithm in order to eliminate false negative predictions would be our next step.
 
-In order to visualize all of our steps and compare our approaches, we built the comparison box plots of cross-validation scores for each of the algorithms performing 2-D space and 30-D space predictions before specification of the hyperparameters and after we found the best hyperparameters for our data. The 10-fold cross validation procedure was used to evaluate each algorithm, importantly configured with the same random seed to ensure that the same splits to the training data are performed and that each algorithm is evaluated in precisely the same way.
+In order to visualize all the steps and compare our approaches and algorithms, we built the comparison box plots of cross-validation scores for each of the algorithms performing 2-D space and 30-D space predictions before specification of the hyperparameters and after we found the best hyperparameters for our data. The 10-fold cross validation procedure was used to evaluate each algorithm, importantly configured with the same random seed to ensure that the same splits to the training data are performed and that each algorithm is evaluated in precisely the same way.
  
- ![Comparison_before and after](https://user-images.githubusercontent.com/46948881/54794966-9ab92480-4c20-11e9-9d3a-6842975258f7.png)
+ ![not optimized vs optimized](https://user-images.githubusercontent.com/46948881/54796400-7bbd9100-4c26-11e9-843c-615bf52e8282.jpg)
  
 As we can see from the picture, SVC does not provide good results without finding appropriate value `C`. To calculate the best hyperparameters for SVC Classification we used `GridSearchCV` method.
 
