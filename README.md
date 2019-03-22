@@ -49,7 +49,7 @@ At first, we made predictions on 2 features. After optimizing the hyperparameter
 
  Next step was to do the same thing on all of the 30 features. We optimized the hyperparameters to `k=1` for KNN and `C=100`, `kernel='rbf'`, `gamma='scale'` for SVC. Below is the comparison table with the relsulting values.
  
- 
+ ![table of scores](https://user-images.githubusercontent.com/46948881/54793136-668d3600-4c17-11e9-994d-99b571a59e74.jpg)
  
 In order to visualize all of our steps and compare our approaches, we built the comparison box plots of cross-validation scores for each of the algorithms performing 2-D space and 30-D space predictions before and after optimization of the algorithms. The 10-fold cross validation procedure was used to evaluate each algorithm, importantly configured with the same random seed to ensure that the same splits to the training data are performed and that each algorithms is evaluated in precisely the same way.
  
