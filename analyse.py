@@ -650,7 +650,7 @@ data, grouped = read_data(dataset['data'], dataset['feature_names'], dataset['ta
 call_3d_clustering, mean_std, box, histograms, histograms_grouped, scatter_3d, scatter, corr = all_functions(classification_flag, data, grouped) 
 
 # Calculating summary statistics
-'''mean_std()
+mean_std()
 
 # Plotting histograms
 print('\n Plotting all histograms into one figure')						#Plotting one histogram for all the features
@@ -692,7 +692,7 @@ if dataset_name == 'breast_cancer':
 	call_3d_clustering ('mean concave points', 'mean perimeter', 'mean compactness')
 if dataset_name == 'boston':
 	print('\n Plotting 3D scatters')
-	scatter_3d('RM', 'LSTAT', 'DIS')'''
+	scatter_3d('RM', 'LSTAT', 'DIS')
 
 
 #-----------CLASSIFICATION ANALYSIS-----------------------------------------
