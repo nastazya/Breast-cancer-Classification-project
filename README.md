@@ -54,9 +54,12 @@ At first, we made predictions on 2 features. After optimizing the hyperparameter
 We can see that, as expected, SVC is way ahead of the other two algorithms when performing in high-dimensional spaces. When predicting using 2 features in our case the results don't differentiate much. We would like to note that in our case we don't want to have misclassifications in the upper right corner of the confusion matrix as it means that malignant case was classified as benign. Optimizing algorithm in order to eliminate false negative predictions would be our next step.
 
 In order to visualize all the steps and compare our approaches and algorithms, we built the comparison box plots of cross-validation scores for each of the algorithms performing 2-D space and 30-D space predictions before specification of the hyperparameters and after we found the best hyperparameters for our data. The 10-fold cross validation procedure was used to evaluate each algorithm, importantly configured with the same random seed to ensure that the same splits to the training data are performed and that each algorithm is evaluated in precisely the same way.
+
  
- ![not optimized vs optimized](https://user-images.githubusercontent.com/46948881/54796400-7bbd9100-4c26-11e9-843c-615bf52e8282.jpg)
- 
+ Not optimized             |  Optimized
+:-------------------------:|:-------------------------:
+![Comparison_NOT_optimized](https://user-images.githubusercontent.com/46948881/54867278-e0770980-4d54-11e9-83a6-1598377f9483.png)   |  ![Comparison_optimized](https://user-images.githubusercontent.com/46948881/54867340-8cb8f000-4d55-11e9-9cc4-4c95150f21d1.png)
+
 As we can see from the picture, SVC does not provide good results without finding appropriate value `C`. To calculate the best hyperparameters for SVC Classification we used `GridSearchCV` method.
 
 ### Discussion
