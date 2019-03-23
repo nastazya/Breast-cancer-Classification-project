@@ -438,16 +438,16 @@ def do_analyse(feature1, feature2):
 
 	# Comparison box plot of NOT tuned algorithms
 	fig = plt.figure(figsize=(7, 6))
-	bp1 = plt.boxplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, sym='', widths=0.6)
-	bp2 = plt.boxplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, sym='', widths=0.6)
-	set_box_color(bp1, '#D7191C')
-	set_box_color(bp2, '#2C7BB6')
+	bp1 = plt.violinplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, showmeans=True, widths=0.6)
+	bp2 = plt.violinplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, showmeans=True, widths=0.6)
+	#set_box_color(bp1, '#D7191C')
+	#set_box_color(bp2, '#2C7BB6')
 	plt.xticks(range(0, len(names) * 2, 2), names)
 	plt.xlim(-2, len(names)*2)
-	plt.ylim(0.5, 1)
+	plt.ylim(0.3, 1)
 	plt.tight_layout()
-	plt.plot([], c='#D7191C', label='30 features')
-	plt.plot([], c='#2C7BB6', label='2 features')
+	plt.plot([], c='#2C7BB6', label='30 features')
+	plt.plot([], c='#D7191C', label='2 features')
 	plt.legend()
 	plt.title('Comparison of untuned algorithms on 30 an 2 features')
 	#plt.show()
@@ -616,18 +616,18 @@ def do_analyse(feature1, feature2):
 
 	# Comparison box plot of tuned algorithms
 	fig = plt.figure(figsize=(7, 6))
-	bp1 = plt.boxplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, sym='', widths=0.6)
-	bp2 = plt.boxplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, sym='', widths=0.6)
-	set_box_color(bp1, '#D7191C')
-	set_box_color(bp2, '#2C7BB6')
+	bp1 = plt.violinplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, showmeans=True, widths=0.6)
+	bp2 = plt.violinplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, showmeans=True, widths=0.6)
+	#set_box_color(bp1, '#D7191C')
+	#set_box_color(bp2, '#2C7BB6')
 	#m = max([max(results1[i]) for i in range(len(results1))])
 	#plt.hlines(m, xmin=-2, xmax=len(names)*2, colors='k', linestyles='solid', label='best score')
 	plt.xticks(range(0, len(names) * 2, 2), names)
 	plt.xlim(-2, len(names)*2)
-	#plt.ylim(0.5, 1)
+	#plt.ylim(0.3, 1)
 	plt.tight_layout()
-	plt.plot([], c='#D7191C', label='30 features')
-	plt.plot([], c='#2C7BB6', label='2 features')
+	plt.plot([], c='#2C7BB6', label='30 features')
+	plt.plot([], c='#D7191C', label='2 features')
 	plt.legend()
 	plt.title = 'Comparison of adjusted algorithms on 30 an 2 features'
 	#plt.show()
@@ -650,7 +650,7 @@ data, grouped = read_data(dataset['data'], dataset['feature_names'], dataset['ta
 call_3d_clustering, mean_std, box, histograms, histograms_grouped, scatter_3d, scatter, corr = all_functions(classification_flag, data, grouped) 
 
 # Calculating summary statistics
-mean_std()
+'''mean_std()
 
 # Plotting histograms
 print('\n Plotting all histograms into one figure')						#Plotting one histogram for all the features
@@ -692,7 +692,7 @@ if dataset_name == 'breast_cancer':
 	call_3d_clustering ('mean concave points', 'mean perimeter', 'mean compactness')
 if dataset_name == 'boston':
 	print('\n Plotting 3D scatters')
-	scatter_3d('RM', 'LSTAT', 'DIS')
+	scatter_3d('RM', 'LSTAT', 'DIS')'''
 
 
 #-----------CLASSIFICATION ANALYSIS-----------------------------------------
