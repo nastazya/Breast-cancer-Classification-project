@@ -68,10 +68,27 @@ Although the score of 2-feature prediction wasn't too bad, it is not high enough
 
 ### Addition
 
-After building scatter plots of all the combinations of two features against the target we chose two pairs of features with small correllation on one hand and showing a good separation on another:
+After building scatter plots of all the combinations of two features with the target we chose two pairs of features with small correllation on one hand and showing a good separation on another:
+
+![scatter_ne](https://user-images.githubusercontent.com/46948881/55089222-74addd00-5083-11e9-9888-9ee3fe76de05.jpg)
+
+After running the script with new sets of features we didn't get visible improvement (means of cross-validation scores below):   
+
+| Concave points and Perimeter  ( _r = 0.85_ )| Concave points and fractal dimention  ( _r = 0.17_ ) | Area and fractal dimension  ( _r = -0.28_) |
+|:-------|:---------------|:--------|
+| Gaussian NB: 0.91| Gaussian NB: 0.90| Gaussian NB: 0.87| 
+| SVC:         0.91| SVC:         0.91| SVC:         0.91|
+| KNN:         0.90| KNN:         0.91| KNN:         0.89|
+
+We performed PCA and run the algorithms using first three columns and didn't get the good results too:
 
 
-After running the script with new sets of features we got slight amelioration of the results:   
+| 30 features | PCA (3 features) |
+|:-------|:---------------|
+| Gaussian NB: 0.93| Gaussian NB: 0.88| 
+| SVC:         0.97| SVC:         0.93|
+| KNN:         0.95| KNN:         0.92|
+
 
 ### References
 
