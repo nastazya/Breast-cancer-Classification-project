@@ -66,6 +66,13 @@ As we can see from the picture, SVC does not provide good results without findin
 
 Although the score of 2-feature prediction wasn't too bad, it is not high enough to predict the diagnosis. On another hand using 30 features is too costly in real-world datasets. To improve the method we would probably find the best related three features to use in SVC. Then using ROC curves we would try to optimize our parameters in order to minimize the false negative rate.   
 
+### Addition
+
+After building scatter plots of all the combinations of two features against the target we chose two pairs of features with small correllation on one hand and showing a good separation on another:
+
+
+After running the script with new sets of features we got slight amelioration of the results:   
+
 ### References
 
 https://scikit-learn.org/stable/modules/neighbors.html#nearest-neighbors-classification
