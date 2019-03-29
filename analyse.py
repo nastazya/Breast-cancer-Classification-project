@@ -670,7 +670,11 @@ def do_analyse(feature1, feature2, feature3):
 	#plt.hlines(m, xmin=-2, xmax=len(names)*2, colors='k', linestyles='solid', label='best score')
 	plt.xticks(range(0, len(names) * 2, 2), names)
 	plt.xlim(-2, len(names)*2)
+<<<<<<< HEAD
 	plt.ylim(0.3, 1)
+=======
+	#plt.ylim(0.3, 1)
+>>>>>>> 995db5dc97939a6f3aa8ddd6576654549d39bc0c
 	plt.tight_layout()
 	plt.plot([], c='#2C7BB6', label='30 features')
 	plt.plot([], c='#D7191C', label='2 features')
