@@ -24,6 +24,7 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import normalize
 
+np.random.seed(123456789)
 
 def load_data(input_name):
 	'''Loading data from sklearn'''
@@ -210,6 +211,41 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 		plt.savefig(("./{0}/{1}-{2}.png".format(folder, f1.replace('/','-'), f2.replace('/','-'))), bbox_inches='tight')
 		plt.close('all')
 
+	def plot_scatter_new(f1, f2):
+		'''Scatter for each pair of features against class'''
+		folder = "scatter_{0}_new".format(dataset_name)
+		if not os.path.exists(folder):
+			os.makedirs(folder)
+		
+		mean_f1 = np.mean(df[f1])
+		mean_f2 = np.mean(df[f2])
+		fig, ax = plt.subplots()
+		width=0.4
+
+		if c_flag == True:
+			for i in range(len(gr["data"])):
+				data_gr = gr["data"][i]
+				label_gr = gr["labels"][i]
+				x = data_gr.loc[:,f1].as_matrix().reshape(1,len(data_gr.loc[:,f1]))
+				x = normalize(x)
+				y =data_gr.loc[:,f2].as_matrix().reshape(1,len(data_gr.loc[:,f2]))
+				y = normalize(y)
+				#z = data_gr.loc[:,'target']
+				z = np.ones(data_gr.shape[0])*i + (np.random.rand(data_gr.shape[0])*width-width/2.)
+				#print(label_gr, ' : ', z)
+				
+				plt.scatter(z, x, c='orange', alpha=0.5)
+				plt.scatter(z, y, c='dodgerblue', alpha=0.5)
+		
+		ax.set_xticks(range(len(gr["labels"])))
+		ax.set_xticklabels(gr["labels"])
+		plt.plot([], c='orange', label=f1)
+		plt.plot([], c='dodgerblue', label=f2)
+		#plt.legend(f1,f2)
+		plt.legend(loc='upper right')
+		plt.savefig(("./{0}/{1}-{2}.png".format(folder, f1.replace('/','-'), f2.replace('/','-'))), bbox_inches='tight')
+		plt.close('all')
+
 
 	def plot_scatter_3d(f1, f2, f3):
 		"3D scatter "
@@ -329,15 +365,18 @@ def all_functions(c_flag, df, gr):			#Closure that takes classification_flag, da
 			fig = dict( data=clustered_data, layout=layout )
 			plot(fig, filename="./{0}/3D_{1}_{2}_{3}.html".format(folder,f1.replace('/','-'),f2.replace('/','-'),f3.replace('/','-')), auto_open=False)
 
-	return plot_3d_clustering, find_mean_std, plot_box, plot_histograms, plot_histograms_grouped, plot_scatter_3d, plot_scatter, plot_corr
+	return plot_3d_clustering, find_mean_std, plot_box, plot_histograms, plot_histograms_grouped, plot_scatter_3d, plot_scatter, plot_scatter_new, plot_corr
 
-def set_data_analyse(f1, f2):
-	X = np.empty(shape=[len(dataset.data), 2])
+def set_data_analyse(f1, f2, f3):
+	if f3:
+		X = np.empty(shape=[len(dataset.data), 3])
+	else: 
+		X = np.empty(shape=[len(dataset.data), 2])
 	y = np.empty(shape=[len(dataset.data),])
 	l = []
 	k = 0
 	for j, c in enumerate(dataset.feature_names):
-		if dataset.feature_names[j] == f1 or dataset.feature_names[j] == f2: 
+		if dataset.feature_names[j] == f1 or dataset.feature_names[j] == f2  or dataset.feature_names[j] == f3: 
 			for i, s in enumerate(dataset.data):
 				X[i,k] = dataset.data[i,j]
 				y[i] = dataset.target[i]
@@ -348,6 +387,14 @@ def set_data_analyse(f1, f2):
 	#X = scaler.fit_transform(X)
 	X = normalize(X, axis=0)
 	return X, y, l
+
+def set_data_analyse_PCA(n):
+	from sklearn.decomposition import PCA
+	pca = PCA(n_components=n)
+	X = pca.fit_transform(dataset.data)
+	y = dataset.target
+	X = normalize(X, axis=0)	
+	return X, y
 
 def plot_results_2D(X_t, y_t, l, name, clf, cvs):
 	# Create color maps
@@ -362,7 +409,7 @@ def plot_results_2D(X_t, y_t, l, name, clf, cvs):
 	x_min, x_max = X_t[:, 0].min() - 0.01, X_t[:, 0].max() + 0.01
 	y_min, y_max = X_t[:, 1].min() - 0.01, X_t[:, 1].max() + 0.01
 	xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.0001), np.arange(y_min, y_max, 0.0001))
-	
+
 	Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
 	Z = Z.reshape(xx.shape)
 	
@@ -383,7 +430,7 @@ def plot_results_2D(X_t, y_t, l, name, clf, cvs):
 	plt.savefig(("./{0}/{1}_{2}_{3}.png".format(folder, name, l[0].replace('/','-'), l[1].replace('/','-'))), bbox_inches='tight')
 	plt.close('all')
 
-def do_analyse(feature1, feature2):
+def do_analyse(feature1, feature2, feature3):
 	"""	
 	1) Analyze GaussianNB, SVC and KNN without adjusting their parameters 
 		- on all the features of the dataset
@@ -420,7 +467,7 @@ def do_analyse(feature1, feature2):
 	y = dataset.target
 	X = normalize(X, axis=0)
 	#for 2 features:
-	X2, y2, features = set_data_analyse(feature1, feature2)
+	X2, y2, features = set_data_analyse(feature1, feature2, feature3)
 	
 	def set_box_color(bp, color):
 		plt.setp(bp['boxes'], color=color)
@@ -438,16 +485,16 @@ def do_analyse(feature1, feature2):
 
 	# Comparison box plot of NOT tuned algorithms
 	fig = plt.figure(figsize=(7, 6))
-	bp1 = plt.boxplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, sym='', widths=0.6)
-	bp2 = plt.boxplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, sym='', widths=0.6)
-	set_box_color(bp1, '#D7191C')
-	set_box_color(bp2, '#2C7BB6')
+	bp1 = plt.violinplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, showmeans=True, widths=0.6)
+	bp2 = plt.violinplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, showmeans=True, widths=0.6)
+	#set_box_color(bp1, '#D7191C')
+	#set_box_color(bp2, '#2C7BB6')
 	plt.xticks(range(0, len(names) * 2, 2), names)
 	plt.xlim(-2, len(names)*2)
-	plt.ylim(0.5, 1)
+	plt.ylim(0.3, 1)
 	plt.tight_layout()
-	plt.plot([], c='#D7191C', label='30 features')
-	plt.plot([], c='#2C7BB6', label='2 features')
+	plt.plot([], c='#2C7BB6', label='30 features')
+	plt.plot([], c='#D7191C', label='2 features')
 	plt.legend()
 	plt.title('Comparison of untuned algorithms on 30 an 2 features')
 	#plt.show()
@@ -457,18 +504,6 @@ def do_analyse(feature1, feature2):
 	results1 = []
 	results2 = []
 	names = []
-
-	# Performing principal component analysis (PCA)
-	#print('\nPerforming PCA')
-	from sklearn.decomposition import PCA
-	pca = PCA(n_components=2)
-	proj = pca.fit_transform(dataset.data)
-	plt.scatter(proj[:, 0], proj[:, 1], c=dataset.target) 
-	plt.colorbar() 
-	plt.title = 'PCA'
-	#plt.show()
-	plt.close('all')
-
 
 
 	# Performing GaussianNB on all the features
@@ -493,23 +528,26 @@ def do_analyse(feature1, feature2):
 	
 	# Performing Gaussian on two chosen features
 	print('/////////////////////////////////////////////')
-	print('Performing GaussianNB on 2 features\n')
-	clf = GaussianNB()
-	X, y, features = set_data_analyse(feature1, feature2)
+	print('Performing Gaussian on features:\n', feature1, '\n', feature2, '\n', feature3)
+	X, y, features = set_data_analyse(feature1, feature2, feature3)
+	#print('Performing Gaussian on', num_PCA, ' features from PCA\n')
+	#X, y = set_data_analyse_PCA(num_PCA)
+
 	classifier_name = 'GaussianNB'
+	clf = GaussianNB()
 	kfold = model_selection.KFold(n_splits=10, random_state=seed)
 	cvs = cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
 	results2.append(cvs)
 
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
 	clf.fit(X_train, y_train)
-	plot_results_2D(X_test, y_test, features, classifier_name, clf, np.mean(cvs))
+	if not feature3: 
+		plot_results_2D(X_test, y_test, features, classifier_name, clf, np.mean(cvs))
 	y_pred = clf.predict(X_test)
 	print('GaussianNB on 2 features score: ', metrics.f1_score(y_test,y_pred,average="macro"))
 	print('cross_val_score mean: ', np.mean(cvs))
 	print(metrics.confusion_matrix(y_test, y_pred))
-	#cv_results2 = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
-
+	
 
 
 
@@ -528,18 +566,21 @@ def do_analyse(feature1, feature2):
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
 	clf.fit(X_train, y_train)
 	y_pred = clf.predict(X_test)
-	kfold = model_selection.KFold(n_splits=5, random_state=seed)
+	#kfold = model_selection.KFold(n_splits=5, random_state=seed)
 	print('SVC score: ', metrics.f1_score(y_test,y_pred,average="macro"))
 	print('cross_val_score mean: ', np.mean(cvs))
 	print(metrics.confusion_matrix(y_test, y_pred))
 
 	
-	# Performing SVC on two chosen features
+	# Performing SVC on PCA two chosen features
 	print('/////////////////////////////////////////////')
-	print('Performing SVC on 2 features\n')
-	clf = SVC(C=100, kernel='rbf', gamma='scale')
-	X, y, features = set_data_analyse(feature1, feature2)
+	print('Performing SVC on features:\n', feature1, '\n', feature2, '\n', feature3)
+	X, y, features = set_data_analyse(feature1, feature2, feature3)
+	#print('Performing SVC on', num_PCA, ' features from PCA\n')
+	#X, y = set_data_analyse_PCA(num_PCA)
+	
 	classifier_name = 'SVC'
+	clf = SVC(C=100, kernel='rbf', gamma='scale', random_state=None)
 	kfold = model_selection.KFold(n_splits=10, random_state=seed)
 	cvs = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
 	results2.append(cvs)
@@ -554,13 +595,15 @@ def do_analyse(feature1, feature2):
 	print("Best estimator found by grid search:")
 	print(clf.best_estimator_)'''
 	clf.fit(X_train, y_train)
-	plot_results_2D(X_test, y_test, features, classifier_name, clf, np.mean(cvs))
+	if not feature3:
+		plot_results_2D(X_test, y_test, features, classifier_name, clf, np.mean(cvs))
 	y_pred = clf.predict(X_test)
 	print('SVC on 2 features score: ', metrics.f1_score(y_test,y_pred,average="macro"))
 	print('cross_val_score mean: ', np.mean(cvs))
 	print(metrics.confusion_matrix(y_test, y_pred))
 
 	
+
 	
 	# Performing KNeighborsClassifier on all the features
 	print('/////////////////////////////////////////////')
@@ -586,21 +629,24 @@ def do_analyse(feature1, feature2):
 	print('cross_val_score mean: ', np.mean(cvs))
 	print(metrics.confusion_matrix(y_test, y_pred))
 
-
-
 	# Performing KNeighborsClassifier for the two chosen columns
 	print('/////////////////////////////////////////////')
-	print('Performing KNeighborsClassifier on 2 features\n')
-	clf = KNeighborsClassifier(n_neighbors=5, weights='uniform')
-	X, y, features = set_data_analyse(feature1, feature2)
+	print('Performing KNN on features:\n', feature1, '\n', feature2, '\n', feature3)
+	X, y, features = set_data_analyse(feature1, feature2, feature3)
+	#print('Performing KNN on', num_PCA, ' features from PCA\n')
+	#X, y = set_data_analyse_PCA(num_PCA)
+
+	
 	classifier_name = 'KN'
+	clf = KNeighborsClassifier(n_neighbors=5, weights='uniform')
 	kfold = model_selection.KFold(n_splits=10, random_state=seed)
 	cvs = model_selection.cross_val_score(clf, X, y, cv=kfold, scoring=scoring)
 	results2.append(cvs)
 
 	X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25, random_state=0)
 	clf.fit(X_train,y_train)
-	plot_results_2D(X_test, y_test, features, classifier_name, clf, np.mean(cvs))
+	if not feature3:
+		plot_results_2D(X_test, y_test, features, classifier_name, clf, np.mean(cvs))
 	y_pred = clf.predict(X_test)
 	'''for n in range(1,11):
 		clf = KNeighborsClassifier(n_neighbors=n, weights='uniform').fit(X_train,y_train)
@@ -616,18 +662,18 @@ def do_analyse(feature1, feature2):
 
 	# Comparison box plot of tuned algorithms
 	fig = plt.figure(figsize=(7, 6))
-	bp1 = plt.boxplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, sym='', widths=0.6)
-	bp2 = plt.boxplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, sym='', widths=0.6)
-	set_box_color(bp1, '#D7191C')
-	set_box_color(bp2, '#2C7BB6')
+	bp1 = plt.violinplot(results1, positions=np.array(range(len(results1)))*2.0-0.4, showmeans=True, widths=0.6)
+	bp2 = plt.violinplot(results2, positions=np.array(range(len(results2)))*2.0+0.4, showmeans=True, widths=0.6)
+	#set_box_color(bp1, '#D7191C')
+	#set_box_color(bp2, '#2C7BB6')
 	#m = max([max(results1[i]) for i in range(len(results1))])
 	#plt.hlines(m, xmin=-2, xmax=len(names)*2, colors='k', linestyles='solid', label='best score')
 	plt.xticks(range(0, len(names) * 2, 2), names)
 	plt.xlim(-2, len(names)*2)
-	#plt.ylim(0.5, 1)
+	plt.ylim(0.3, 1)
 	plt.tight_layout()
-	plt.plot([], c='#D7191C', label='30 features')
-	plt.plot([], c='#2C7BB6', label='2 features')
+	plt.plot([], c='#2C7BB6', label='30 features')
+	plt.plot([], c='#D7191C', label='2 features')
 	plt.legend()
 	plt.title = 'Comparison of adjusted algorithms on 30 an 2 features'
 	#plt.show()
@@ -647,7 +693,7 @@ print('Classification flag value: ', classification_flag)
 
 # Transrferring sklearn dataset to Data Frame
 data, grouped = read_data(dataset['data'], dataset['feature_names'], dataset['target'])
-call_3d_clustering, mean_std, box, histograms, histograms_grouped, scatter_3d, scatter, corr = all_functions(classification_flag, data, grouped) 
+call_3d_clustering, mean_std, box, histograms, histograms_grouped, scatter_3d, scatter, scatter_new, corr = all_functions(classification_flag, data, grouped) 
 
 # Calculating summary statistics
 mean_std()
@@ -678,6 +724,7 @@ for i in range(len(data.iloc[0])-1):
 		col_name2 = data.iloc[:,j].name
 		print('\n Plotting scatter of ', col_name1, 'and ', col_name2)
 		scatter(col_name1, col_name2)
+		scatter_new(col_name1, col_name2)
 
 	
 #Plotting 3D scatter and clustering for custom features
@@ -696,16 +743,25 @@ if dataset_name == 'boston':
 
 
 #-----------CLASSIFICATION ANALYSIS-----------------------------------------
+num_PCA = 3 	# Set the number of culumns for PCA 
+
 if dataset_name == 'iris':
 	feature1 = 'petal length (cm)'
 	feature2 = 'petal width (cm)'
+	feature3 = ''
 if dataset_name == 'breast_cancer':
-	feature1 = 'mean concave points'
-	feature2 = 'mean perimeter'
+	#feature1 = 'mean concave points'
+	#feature2 = 'mean perimeter'
+	#feature1 = 'mean texture'
+	#feature2 = 'mean symmetry'
+	feature1 = 'worst smoothness'
+	feature2 = 'mean texture'
+	feature3 = ''
 if dataset_name == 'wine':
 	feature1 = 'proline'
 	feature2 = 'od280/od315_of_diluted_wines'
-
+	feature3 = ''
 if classification_flag == True:
-	do_analyse(feature1, feature2)
+	do_analyse(feature1, feature2, feature3)
+
 
