@@ -1,4 +1,4 @@
-# final_project
+# Breast cancer Classification
 Loading multiple datasets from scikit-learn, visualizing them, performing and comparing basic classification algorithms
 
 
